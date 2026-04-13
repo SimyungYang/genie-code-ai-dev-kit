@@ -6,7 +6,5 @@ command:
   - --port
   - "8000"
 env:
-  - name: GITHUB_REPO_URL
-    value: "https://github.com/databricks-solutions/ai-dev-kit.git"
-  - name: GITHUB_BRANCH
-    value: "main"
+  - name: PYTHONDONTWRITEBYTECODE
+    value: "1"
