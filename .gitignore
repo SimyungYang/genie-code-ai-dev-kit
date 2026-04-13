@@ -1,0 +1,7 @@
+.claude/
+mcp-server-app/
+guide-*.md
+docs/*.png
+__pycache__/
+*.pyc
+.env
