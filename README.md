@@ -318,36 +318,131 @@ Skills는 Genie Code Agent Mode에서 **자동으로 contextually 로딩**됩니
 
 ## 4. 권장 MCP 도구 선택
 
-15개 제한이 있으므로, **Genie Code OOB와 중복을 피하고 AI Dev Kit 고유 기능에 집중**합니다.
+15개 제한이 있으므로, **Genie Code OOB와 중복을 피하고 AI Dev Kit 고유 기능에 집중**합니다.  
+역할이나 업무에 따라 필요한 도구가 다릅니다. 아래 상황별 프로필을 참고하세요.
 
-### 활성화 권장 도구 (15개)
+### 상황별 권장 프로필
 
-| # | 도구 | 이유 | Genie Code OOB |
-|---|------|------|---------------|
-| 1 | `manage_genie` | Genie Space **생성/수정/마이그레이션** | OOB는 질의만 |
-| 2 | `manage_mas` | Supervisor Agent 생성/관리 | 없음 |
-| 3 | `manage_ka` | Knowledge Assistant 생성/관리 | 없음 |
-| 4 | `manage_dashboard` | 크로스 프로덕트 대시보드 생성 | UI 안에서만 |
-| 5 | `manage_jobs` | Job 정의/스케줄/관리 | 없음 |
-| 6 | `manage_job_runs` | Job 실행/모니터링 | 없음 |
-| 7 | `manage_pipeline` | 파이프라인 관리 | UI 안에서만 |
-| 8 | `manage_pipeline_run` | 파이프라인 실행 | 없음 |
-| 9 | `manage_app` | Apps 배포/관리 | 없음 |
-| 10 | `manage_lakebase_database` | Lakebase 생성/관리 | 없음 |
-| 11 | `manage_serving_endpoint` | Model Serving 관리 | 없음 |
-| 12 | `execute_code` | 원격 코드 실행 | 없음 |
-| 13 | `manage_uc_objects` | UC 오브젝트 관리 (OOB보다 넓음) | 제한적 |
-| 14 | `manage_uc_grants` | 권한 관리 | 없음 |
-| 15 | `manage_workspace_files` | 파일 관리 | 없음 |
+#### Profile A: 데이터 엔지니어 (파이프라인 + Job 중심)
+
+> 파이프라인 구성, Job 스케줄링, 데이터 품질 관리가 주 업무
+
+| # | 도구 | 용도 |
+|---|------|------|
+| 1 | `manage_pipeline` | DLT 파이프라인 생성/수정/삭제 |
+| 2 | `manage_pipeline_run` | 파이프라인 실행/중지 |
+| 3 | `manage_jobs` | Job 정의/스케줄 |
+| 4 | `manage_job_runs` | Job 실행/모니터링/취소 |
+| 5 | `execute_code` | 클러스터에서 PySpark 코드 직접 실행 |
+| 6 | `execute_sql` | DDL/DML 직접 실행 (노트북 우회 없이) |
+| 7 | `manage_uc_objects` | 카탈로그/스키마/테이블/Volume 관리 |
+| 8 | `manage_uc_grants` | 테이블/스키마 권한 부여 |
+| 9 | `get_table_stats_and_schema` | 테이블 스키마/통계 확인 |
+| 10 | `manage_dashboard` | 파이프라인 모니터링 대시보드 생성 |
+| 11 | `manage_workspace_files` | 노트북/파일 관리 |
+| 12 | `manage_cluster` | 클러스터 생성/시작/종료 |
+| 13 | `manage_sql_warehouse` | SQL Warehouse 관리 |
+| 14 | `manage_genie` | 데이터 탐색용 Genie Space 생성 |
+| 15 | `list_compute` | 사용 가능한 컴퓨트 확인 |
+
+#### Profile B: AI/ML 엔지니어 (Agent Bricks + Serving 중심)
+
+> Supervisor Agent, Knowledge Assistant, Model Serving이 주 업무
+
+| # | 도구 | 용도 |
+|---|------|------|
+| 1 | `manage_mas` | Supervisor Agent 생성/관리 |
+| 2 | `manage_ka` | Knowledge Assistant 생성/관리 |
+| 3 | `manage_genie` | Genie Space 생성 (MAS sub-agent용) |
+| 4 | `manage_serving_endpoint` | Model Serving 엔드포인트 배포/관리 |
+| 5 | `manage_vs_index` | Vector Search 인덱스 생성 |
+| 6 | `manage_vs_endpoint` | Vector Search 엔드포인트 관리 |
+| 7 | `manage_vs_data` | Vector Search 데이터 동기화 |
+| 8 | `execute_code` | 모델 학습/평가 코드 실행 |
+| 9 | `manage_uc_objects` | UC 오브젝트 관리 |
+| 10 | `manage_uc_grants` | 엔드포인트/테이블 권한 관리 |
+| 11 | `manage_app` | Agent 앱 배포 |
+| 12 | `manage_jobs` | 학습/평가 Job 스케줄링 |
+| 13 | `manage_job_runs` | Job 실행/모니터링 |
+| 14 | `manage_workspace_files` | 모델 아티팩트/노트북 관리 |
+| 15 | `manage_lakebase_database` | Agent 상태 저장용 Lakebase |
+
+#### Profile C: 데이터 분석가 / BI (대시보드 + Genie 중심)
+
+> 데이터 탐색, 대시보드 생성, Genie Space 활용이 주 업무
+
+| # | 도구 | 용도 |
+|---|------|------|
+| 1 | `manage_dashboard` | 대시보드 생성/수정/퍼블리시 |
+| 2 | `manage_genie` | Genie Space 생성/테이블 추가 |
+| 3 | `execute_sql` | SQL 직접 실행 (DDL 포함) |
+| 4 | `execute_sql_multi` | 여러 SQL 동시 실행 |
+| 5 | `get_table_stats_and_schema` | 테이블 스키마/통계/샘플 확인 |
+| 6 | `manage_uc_objects` | 카탈로그/스키마/테이블 탐색 |
+| 7 | `manage_jobs` | 대시보드 리프레시 Job 설정 |
+| 8 | `manage_job_runs` | Job 실행 확인 |
+| 9 | `manage_uc_grants` | 팀원에게 테이블 접근 권한 부여 |
+| 10 | `manage_workspace_files` | 쿼리/노트북 파일 관리 |
+| 11 | `execute_code` | 데이터 전처리 코드 실행 |
+| 12 | `manage_ka` | 문서 기반 Q&A 에이전트 생성 |
+| 13 | `manage_mas` | 분석 Supervisor Agent |
+| 14 | `manage_sql_warehouse` | Warehouse 관리 |
+| 15 | `list_compute` | 사용 가능한 컴퓨트 확인 |
+
+#### Profile D: 플랫폼 관리자 (인프라 + 권한 중심)
+
+> UC 권한 관리, 컴퓨트 관리, 앱 배포가 주 업무
+
+| # | 도구 | 용도 |
+|---|------|------|
+| 1 | `manage_uc_objects` | 카탈로그/스키마/Volume CRUD |
+| 2 | `manage_uc_grants` | 권한 GRANT/REVOKE |
+| 3 | `manage_uc_storage` | 외부 스토리지 관리 |
+| 4 | `manage_uc_connections` | 외부 연결 관리 |
+| 5 | `manage_uc_tags` | 태그 관리 |
+| 6 | `manage_uc_security_policies` | 보안 정책 관리 |
+| 7 | `manage_cluster` | 클러스터 생성/관리/종료 |
+| 8 | `manage_sql_warehouse` | SQL Warehouse 관리 |
+| 9 | `manage_app` | Databricks App 배포/관리 |
+| 10 | `manage_lakebase_database` | Lakebase 인스턴스 관리 |
+| 11 | `manage_serving_endpoint` | 서빙 엔드포인트 관리 |
+| 12 | `manage_jobs` | Job 관리/정리 |
+| 13 | `manage_workspace_files` | 워크스페이스 파일 관리 |
+| 14 | `execute_sql` | 관리용 SQL 실행 |
+| 15 | `list_compute` | 컴퓨트 리소스 현황 |
+
+#### Profile E: 올라운드 (범용 — 가장 넓은 커버리지)
+
+> 특정 역할에 치우치지 않고 다양한 작업을 수행하는 경우
+
+| # | 도구 | 용도 |
+|---|------|------|
+| 1 | `manage_genie` | Genie Space 생성/관리 |
+| 2 | `manage_mas` | Supervisor Agent |
+| 3 | `manage_ka` | Knowledge Assistant |
+| 4 | `manage_dashboard` | 대시보드 생성 |
+| 5 | `manage_jobs` | Job 관리 |
+| 6 | `manage_job_runs` | Job 실행 |
+| 7 | `manage_pipeline` | 파이프라인 관리 |
+| 8 | `manage_pipeline_run` | 파이프라인 실행 |
+| 9 | `manage_app` | Apps 배포 |
+| 10 | `manage_lakebase_database` | Lakebase |
+| 11 | `manage_serving_endpoint` | Model Serving |
+| 12 | `execute_code` | 코드 실행 |
+| 13 | `manage_uc_objects` | UC 관리 |
+| 14 | `manage_uc_grants` | 권한 관리 |
+| 15 | `manage_workspace_files` | 파일 관리 |
 
 ### 비활성화 권장 도구 (OOB와 중복)
 
+Genie Code가 이미 내장 MCP로 처리하는 기능은 슬롯을 아끼기 위해 비활성화합니다:
+
 | 도구 | 이유 |
 |------|------|
-| `execute_sql` | Genie Code OOB DBSQL MCP가 이미 처리 |
 | `ask_genie` | Genie Code OOB Genie Space MCP가 이미 처리 |
 | `query_vs_index` | Genie Code OOB Vector Search MCP가 이미 처리 |
-| `execute_sql_multi` | DBSQL과 중복 |
+
+> `execute_sql`은 OOB DBSQL과 겹치지만, Genie Code가 노트북을 만들어 우회하는 경우가 있어 Profile에 따라 활성화를 권장합니다.
 
 ---
 
