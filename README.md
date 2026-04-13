@@ -1,6 +1,22 @@
 # Genie Code + AI Dev Kit MCP 구성 가이드
 
-Genie Code에 [Databricks AI Dev Kit](https://github.com/databricks-solutions/ai-dev-kit)의 MCP Tools & Skills를 연결하여, Genie Space 생성, Job 스케줄링, Apps 배포 등 크로스 프로덕트 작업을 하나의 대화에서 수행할 수 있도록 구성하는 가이드입니다.
+## 왜 이 구성이 필요한가?
+
+Genie Code는 최신 LLM 모델 기반의 강력한 AI 어시스턴트입니다. 노트북에서 코드를 생성하고, 대시보드 UI에서 차트를 만들고, Pipeline Editor에서 ETL 파이프라인을 작성하는 등 **각 제품 영역 안에서는** 이미 훌륭하게 동작합니다.
+
+하지만 실제 데이터 엔지니어링 업무에서는 이런 요청이 자주 나옵니다:
+
+> "이 테이블들로 Genie Space 하나 만들어줘"  
+> "방금 분석한 데이터로 대시보드 만들고, 매일 리프레시 Job까지 걸어줘"  
+> "Knowledge Assistant 만들어서 Supervisor Agent에 연결해줘"
+
+Genie Code만으로는 이런 작업을 처리할 수 없습니다. Genie Space 질의는 되지만 **생성**은 안 되고, 대시보드도 대시보드 UI 안에서만 만들 수 있을 뿐 **노트북에서 한 대화로 대시보드 + Job을 동시에** 만드는 건 불가능합니다. Supervisor Agent, Knowledge Assistant, Apps 배포, Lakebase, Model Serving 같은 기능은 아예 Genie Code에 없습니다.
+
+[Databricks AI Dev Kit](https://github.com/databricks-solutions/ai-dev-kit)은 이런 빈 영역을 44개 이상의 MCP 도구와 25개 Skills로 채워줍니다. AI Dev Kit MCP 서버를 Databricks App으로 배포하고 Genie Code에 연결하면, Genie Code가 기존에 할 수 없던 크로스 프로덕트 작업을 하나의 대화에서 수행할 수 있게 됩니다.
+
+다만 Genie Code에는 **MCP 도구 15개 제한**이 있습니다. AI Dev Kit이 제공하는 44개 도구를 모두 켤 수 없기 때문에, Genie Code가 이미 잘 처리하는 기능(SQL 실행, Genie 질의 등)은 OOB에 맡기고, **Genie Code에 없는 기능 위주로 15개를 선택하여 활성화하는 것을 권장합니다.**
+
+이 레포는 그 전체 과정을 Step-by-Step으로 정리한 가이드입니다.
 
 ---
 
