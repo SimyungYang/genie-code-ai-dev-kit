@@ -1,5 +1,8 @@
 .claude/
 mcp-server-app/
+app-data-eng/
+app-agent-ai/
+app-platform/
 guide-*.md
 docs/*.png
 __pycache__/
