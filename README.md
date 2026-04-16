@@ -1,5 +1,91 @@
 # Genie Code + AI Dev Kit MCP 구성 가이드
 
+## Quick Start — 간편 배포 (3분)
+
+```bash
+# 1. 리포 클론
+git clone https://github.com/SimyungYang/genie-code-ai-dev-kit.git
+cd genie-code-ai-dev-kit
+
+# 2. 간편 배포 (앱 생성 + 배포 + 권한 + Skills 자동)
+./deploy.sh
+
+# 3. (선택) 가전 IoT 카탈로그를 사용하는 경우
+./deploy.sh --catalog lge_appliance
+```
+
+배포 완료 후:
+1. Databricks 노트북 열기
+2. Genie Code (✨) → Settings → MCP Servers → "+ Add Server" → `mcp-ai-dev-kit` 선택
+3. 필요한 도구만 ON (권장 15개)
+
+> 상세 수동 설정은 아래 [Step-by-Step 구성 가이드](#3-step-by-step-구성-가이드) 참조
+
+---
+
+## 전제조건 (Prerequisites)
+
+### 필수
+
+| 항목 | 요구사항 | 확인 방법 |
+|------|---------|----------|
+| **Databricks Workspace** | Premium 이상, Unity Catalog 활성화 | 워크스페이스 URL 접속 가능 |
+| **Databricks CLI** | v0.230+ | `databricks --version` |
+| **CLI 인증** | OAuth 또는 PAT 인증 완료 | `databricks current-user me` |
+| **Python** | 3.9+ | `python3 --version` |
+| **Git** | 최신 버전 | `git --version` |
+| **jq** | JSON 파서 (deploy.sh에서 사용) | `jq --version` |
+
+### Databricks CLI 설치
+
+```bash
+# macOS (Homebrew)
+brew install databricks
+
+# Linux / Windows (pip)
+pip install databricks-cli
+
+# 버전 확인
+databricks --version
+```
+
+### Databricks CLI 인증
+
+```bash
+# OAuth 인증 (권장 — 브라우저 팝업으로 로그인)
+databricks auth login --host https://<워크스페이스-URL>
+
+# 인증 확인
+databricks current-user me
+```
+
+> 프로필이 여러 개인 경우 `--profile <이름>`으로 지정합니다.
+> 예: `databricks auth login --host https://adb-xxxx.azuredatabricks.net --profile workshop`
+
+### Workspace 권한
+
+| 권한 | 필요 이유 | 확인 |
+|------|----------|------|
+| **Databricks Apps 생성** | MCP 앱 배포 | Workspace Settings → Apps 활성화 |
+| **서버리스 컴퓨트** | 앱 실행 환경 | 관리자에게 문의 |
+| **Unity Catalog 카탈로그 소유자** 또는 **관리자** | SP에 GRANT 부여 | `SHOW GRANTS ON CATALOG <name>` |
+| **SQL Warehouse 접근** | MCP 도구가 SQL 실행 | SQL Warehouses에서 확인 |
+
+### jq 설치 (deploy.sh에서 필요)
+
+```bash
+# macOS
+brew install jq
+
+# Ubuntu/Debian
+sudo apt-get install jq
+
+# 확인
+jq --version
+```
+
+---
+
 ## 왜 이 구성이 필요한가?
 
 Genie Code는 최신 LLM 모델 기반의 강력한 AI 어시스턴트입니다. 노트북에서 코드를 생성하고, 대시보드 UI에서 차트를 만들고, Pipeline Editor에서 ETL 파이프라인을 작성하는 등 **각 제품 영역 안에서는** 이미 훌륭하게 동작합니다.

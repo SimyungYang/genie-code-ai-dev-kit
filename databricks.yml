@@ -1,0 +1,31 @@
+bundle:
+  name: mcp-ai-dev-kit
+
+# 워크스페이스 접속 정보 (databricks auth login으로 설정된 프로필 사용)
+workspace:
+  host: ${var.workspace_host}
+
+variables:
+  workspace_host:
+    description: "Databricks 워크스페이스 URL (예: https://adb-xxxx.azuredatabricks.net)"
+    default: ""
+  catalog_name:
+    description: "워크샵에서 사용할 Unity Catalog 이름"
+    default: "lge_smart_tv"
+
+resources:
+  apps:
+    mcp-ai-dev-kit:
+      name: "mcp-ai-dev-kit"
+      description: "AI Dev Kit MCP Server for Genie Code"
+      source_code_path: ./app
+      resources:
+        - name: sql-warehouse
+          description: "SQL Warehouse for MCP tools"
+          sql_warehouse: {}
+
+targets:
+  dev:
+    default: true
+    variables:
+      workspace_host: ${workspace.host}
