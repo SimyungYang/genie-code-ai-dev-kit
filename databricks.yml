@@ -11,7 +11,7 @@ variables:
     default: ""
   catalog_name:
     description: "워크샵에서 사용할 Unity Catalog 이름"
-    default: "lge_smart_tv"
+    default: ""
 
 resources:
   apps:

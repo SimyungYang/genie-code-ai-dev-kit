@@ -3,12 +3,23 @@
 # Genie Code + AI Dev Kit 간편 배포 스크립트
 #
 # 사용법:
-#   ./deploy.sh                          # 기본 배포 (lge_smart_tv 카탈로그)
-#   ./deploy.sh --catalog lge_appliance  # 가전 IoT 카탈로그
+#   ./deploy.sh --catalog my_catalog     # 카탈로그 지정 (필수)
+#   CATALOG=my_catalog ./deploy.sh       # 환경변수로 지정
 #
 set -e
 
-CATALOG="${CATALOG:-lge_smart_tv}"
+# Python 명령어 자동 감지 (python3 우선, 없으면 python)
+if command -v python3 &> /dev/null; then
+  PYTHON=python3
+elif command -v python &> /dev/null; then
+  PYTHON=python
+else
+  echo "❌ Python이 설치되어 있지 않습니다."
+  echo "   설치: https://www.python.org/downloads/"
+  exit 1
+fi
+
+CATALOG="${CATALOG:-}"
 
 # 인자 파싱
 while [[ $# -gt 0 ]]; do
@@ -18,16 +29,26 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# 카탈로그 필수 확인
+if [ -z "$CATALOG" ]; then
+  echo "❌ 카탈로그를 지정해주세요."
+  echo "   사용법: ./deploy.sh --catalog <카탈로그명>"
+  echo "   예시:   ./deploy.sh --catalog my_catalog"
+  exit 1
+fi
+
 echo "================================================"
 echo "  Genie Code + AI Dev Kit 간편 배포"
 echo "================================================"
+echo "  카탈로그: $CATALOG"
 echo ""
 
 # 1. Databricks CLI 확인
 if ! command -v databricks &> /dev/null; then
   echo "❌ Databricks CLI가 설치되어 있지 않습니다."
-  echo "   설치: brew install databricks (macOS)"
-  echo "   또는: pip install databricks-cli"
+  echo "   macOS:   brew install databricks"
+  echo "   Windows: winget install Databricks.DatabricksCLI"
+  echo "   Linux:   curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh"
   exit 1
 fi
 echo "✅ Databricks CLI: $(databricks --version)"
@@ -38,7 +59,7 @@ if ! databricks current-user me &> /dev/null; then
   echo "   실행: databricks auth login --host <워크스페이스 URL>"
   exit 1
 fi
-USER=$(databricks current-user me --output json 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('userName','unknown'))" 2>/dev/null || echo "authenticated")
+USER=$(databricks current-user me --output json 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('userName','unknown'))" 2>/dev/null || echo "authenticated")
 echo "✅ 인증: $USER"
 
 # 3. MCP 앱 생성 + 배포
@@ -60,7 +81,7 @@ fi
 echo ""
 echo "⏳ 앱 시작 대기 중 (최대 2분)..."
 for i in $(seq 1 24); do
-  STATUS=$(databricks apps get "$APP_NAME" --output json 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('status',{}).get('state','UNKNOWN'))" 2>/dev/null || echo "UNKNOWN")
+  STATUS=$(databricks apps get "$APP_NAME" --output json 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('status',{}).get('state','UNKNOWN'))" 2>/dev/null || echo "UNKNOWN")
   if [ "$STATUS" = "RUNNING" ]; then
     echo "✅ 앱 상태: RUNNING"
     break
@@ -78,16 +99,16 @@ fi
 echo ""
 echo "🔐 서비스 프린시펄 권한 설정 중..."
 
-SP_CLIENT_ID=$(databricks apps get "$APP_NAME" --output json 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('service_principal_client_id',''))" 2>/dev/null)
+SP_CLIENT_ID=$(databricks apps get "$APP_NAME" --output json 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('service_principal_client_id',''))" 2>/dev/null)
 
 if [ -n "$SP_CLIENT_ID" ]; then
-  TOKEN=$(databricks auth token 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('access_token',''))" 2>/dev/null || echo "")
-  HOST=$(databricks auth env 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('env',{}).get('DATABRICKS_HOST',''))" 2>/dev/null || echo "")
+  TOKEN=$(databricks auth token 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('access_token',''))" 2>/dev/null || echo "")
+  HOST=$(databricks auth env 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('env',{}).get('DATABRICKS_HOST',''))" 2>/dev/null || echo "")
 
   if [ -n "$TOKEN" ] && [ -n "$HOST" ]; then
     # SP Databricks ID 조회
     SP_ID=$(curl -s "$HOST/api/2.0/preview/scim/v2/ServicePrincipals?filter=applicationId+eq+%22$SP_CLIENT_ID%22" \
-      -H "Authorization: Bearer $TOKEN" | python3 -c "import json,sys; print(json.load(sys.stdin).get('Resources',[{}])[0].get('id',''))" 2>/dev/null)
+      -H "Authorization: Bearer $TOKEN" | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('Resources',[{}])[0].get('id',''))" 2>/dev/null)
 
     if [ -n "$SP_ID" ]; then
       # Workspace + SQL 접근 권한
@@ -108,7 +129,7 @@ if [ -n "$SP_CLIENT_ID" ]; then
       echo "   ✅ Workspace + SQL 접근 권한 부여"
 
       # SQL Warehouse 권한
-      WH_ID=$(databricks warehouses list --output json 2>/dev/null | python3 -c "import json,sys; whs=json.load(sys.stdin); print(whs[0]['id'] if whs else '')" 2>/dev/null)
+      WH_ID=$(databricks warehouses list --output json 2>/dev/null | $PYTHON -c "import json,sys; whs=json.load(sys.stdin); print(whs[0]['id'] if whs else '')" 2>/dev/null)
       if [ -n "$WH_ID" ]; then
         curl -s -X PATCH "$HOST/api/2.0/permissions/sql/warehouses/$WH_ID" \
           -H "Authorization: Bearer $TOKEN" \

@@ -8,11 +8,11 @@ git clone https://github.com/SimyungYang/genie-code-ai-dev-kit.git
 cd genie-code-ai-dev-kit
 
 # 2. 간편 배포 (앱 생성 + 배포 + 권한 + Skills 자동)
-./deploy.sh
-
-# 3. (선택) 가전 IoT 카탈로그를 사용하는 경우
-./deploy.sh --catalog lge_appliance
+#    --catalog은 필수입니다. 본인의 Unity Catalog 이름을 지정하세요.
+./deploy.sh --catalog my_catalog
 ```
+
+> **Windows 사용자**: `deploy.sh`는 Bash 스크립트입니다. Git Bash, WSL, 또는 아래 [수동 설정 가이드](#3-step-by-step-구성-가이드)를 참고하세요.
 
 배포 완료 후:
 1. Databricks 노트북 열기
@@ -32,22 +32,52 @@ cd genie-code-ai-dev-kit
 | **Databricks Workspace** | Premium 이상, Unity Catalog 활성화 | 워크스페이스 URL 접속 가능 |
 | **Databricks CLI** | v0.230+ | `databricks --version` |
 | **CLI 인증** | OAuth 또는 PAT 인증 완료 | `databricks current-user me` |
-| **Python** | 3.9+ | `python3 --version` |
+| **Python** | 3.9+ | `python3 --version` (Windows: `python --version`) |
 | **Git** | 최신 버전 | `git --version` |
 | **jq** | JSON 파서 (deploy.sh에서 사용) | `jq --version` |
 
 ### Databricks CLI 설치
 
+{% tabs %}
+{% tab title="macOS" %}
 ```bash
-# macOS (Homebrew)
+# Homebrew
 brew install databricks
-
-# Linux / Windows (pip)
-pip install databricks-cli
 
 # 버전 확인
 databricks --version
 ```
+{% endtab %}
+
+{% tab title="Windows" %}
+```powershell
+# 방법 1: winget (권장)
+winget install Databricks.DatabricksCLI
+
+# 방법 2: Chocolatey
+choco install databricks-cli
+
+# 방법 3: 직접 다운로드
+# https://github.com/databricks/cli/releases 에서 Windows AMD64 zip 다운로드
+# 압축 해제 후 databricks.exe를 PATH가 잡힌 디렉토리에 복사
+
+# 버전 확인
+databricks --version
+```
+
+> **참고**: `pip install databricks-cli`는 **레거시 CLI**입니다. 반드시 위 방법으로 최신 Databricks CLI를 설치하세요.
+{% endtab %}
+
+{% tab title="Linux" %}
+```bash
+# 직접 다운로드
+curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+
+# 버전 확인
+databricks --version
+```
+{% endtab %}
+{% endtabs %}
 
 ### Databricks CLI 인증
 
@@ -73,16 +103,48 @@ databricks current-user me
 
 ### jq 설치 (deploy.sh에서 필요)
 
+{% tabs %}
+{% tab title="macOS" %}
 ```bash
-# macOS
 brew install jq
+```
+{% endtab %}
 
+{% tab title="Windows" %}
+```powershell
+# winget
+winget install jqlang.jq
+
+# 또는 Chocolatey
+choco install jq
+
+# 또는 scoop
+scoop install jq
+```
+{% endtab %}
+
+{% tab title="Linux" %}
+```bash
 # Ubuntu/Debian
 sudo apt-get install jq
 
-# 확인
-jq --version
+# RHEL/CentOS
+sudo yum install jq
 ```
+{% endtab %}
+{% endtabs %}
+
+### Windows에서 deploy.sh 실행하기
+
+`deploy.sh`는 Bash 스크립트이므로, Windows에서는 다음 중 하나를 사용하세요:
+
+| 방법 | 설명 | 실행 |
+|------|------|------|
+| **Git Bash** (권장) | Git for Windows 설치 시 포함 | Git Bash 터미널에서 `./deploy.sh --catalog my_catalog` |
+| **WSL** | Windows Subsystem for Linux | WSL 터미널에서 동일 명령 |
+| **수동 설정** | Bash 없이 진행 | 아래 [Step-by-Step 구성 가이드](#3-step-by-step-구성-가이드) 참조 |
+
+> **Git Bash 사용 시 주의**: `python3` 명령이 없을 수 있습니다. `python --version`으로 Python 3.9+가 확인되면 정상입니다. deploy.sh 내부에서 `python3`를 호출하므로, Git Bash에서는 alias를 설정하거나 WSL을 권장합니다.
 
 ---
 
