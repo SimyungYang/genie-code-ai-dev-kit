@@ -8,16 +8,26 @@
 #
 set -e
 
-# Python 명령어 자동 감지 (python3 우선, 없으면 python)
-if command -v python3 &> /dev/null; then
-  PYTHON=python3
-elif command -v python &> /dev/null; then
-  PYTHON=python
-else
-  echo "❌ Python이 설치되어 있지 않습니다."
+# Python 3.10+ 자동 감지 (버전 높은 순 탐색)
+PYTHON=""
+for candidate in python3.13 python3.12 python3.11 python3.10 python3 python; do
+  if command -v "$candidate" &> /dev/null; then
+    PY_MINOR=$($candidate -c "import sys; print(sys.version_info.minor)" 2>/dev/null || echo "0")
+    if [ "$PY_MINOR" -ge 10 ] 2>/dev/null; then
+      PYTHON="$candidate"
+      break
+    fi
+  fi
+done
+
+if [ -z "$PYTHON" ]; then
+  echo "❌ Python 3.10 이상이 필요합니다."
+  PY_VER=$(python3 --version 2>/dev/null || python --version 2>/dev/null || echo "Python 미설치")
+  echo "   현재: $PY_VER"
   echo "   설치: https://www.python.org/downloads/"
   exit 1
 fi
+PY_VERSION=$($PYTHON -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null)
 
 CATALOG="${CATALOG:-}"
 

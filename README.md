@@ -32,7 +32,7 @@ cd genie-code-ai-dev-kit
 | **Databricks Workspace** | Premium 이상, Unity Catalog 활성화 | 워크스페이스 URL 접속 가능 |
 | **Databricks CLI** | v0.230+ | `databricks --version` |
 | **CLI 인증** | OAuth 또는 PAT 인증 완료 | `databricks current-user me` |
-| **Python** | 3.9+ | `python3 --version` (Windows: `python --version`) |
+| **Python** | 3.10+ | `python3 --version` (Windows: `python --version`) |
 | **Git** | 최신 버전 | `git --version` |
 | **jq** | JSON 파서 (deploy.sh에서 사용) | `jq --version` |
 

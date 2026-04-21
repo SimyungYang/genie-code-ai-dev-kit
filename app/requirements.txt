@@ -1,8 +1,6 @@
+# NOTE: databricks-tools-core requires Python >=3.10
+# Install in order — tools-core first, then mcp-server (same git repo, sequential avoids pip build conflicts)
 databricks-tools-core @ git+https://github.com/databricks-solutions/ai-dev-kit.git@main#subdirectory=databricks-tools-core
 databricks-mcp-server @ git+https://github.com/databricks-solutions/ai-dev-kit.git@main#subdirectory=databricks-mcp-server
-fastmcp>=3.1.0
-mcp>=1.0.0
 uvicorn>=0.34.0
-httpx>=0.28.0
-pyyaml>=6.0
 starlette
