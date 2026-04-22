@@ -9,6 +9,9 @@
 #
 set -e
 
+# Windows Git Bash (MINGW64) 경로 변환 방지
+export MSYS_NO_PATHCONV=1
+
 # Python 자동 감지
 PYTHON=""
 for candidate in python3.13 python3.12 python3.11 python3.10 python3 python; do

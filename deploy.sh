@@ -10,6 +10,10 @@
 #
 set -e
 
+# Windows Git Bash (MINGW64) 경로 변환 방지
+# /Workspace/... → C:/Program Files/Git/Workspace/... 변환을 막음
+export MSYS_NO_PATHCONV=1
+
 # Python 3.10+ 자동 감지 (버전 높은 순 탐색)
 PYTHON=""
 for candidate in python3.13 python3.12 python3.11 python3.10 python3 python; do
