@@ -3,8 +3,10 @@
 # Genie Code + AI Dev Kit 간편 배포 스크립트
 #
 # 사용법:
-#   ./deploy.sh --catalog my_catalog     # 카탈로그 지정 (필수)
-#   CATALOG=my_catalog ./deploy.sh       # 환경변수로 지정
+#   ./deploy.sh --catalog my_catalog                        # 카탈로그 지정 (필수)
+#   ./deploy.sh --catalog my_catalog --profile my_profile   # 프로필 지정
+#   ./deploy.sh --catalog my_catalog --app-name my-app      # 앱 이름 지정
+#   CATALOG=my_catalog ./deploy.sh                          # 환경변수로 지정
 #
 set -e
 
@@ -30,11 +32,15 @@ fi
 PY_VERSION=$($PYTHON -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')" 2>/dev/null)
 
 CATALOG="${CATALOG:-}"
+PROFILE="${PROFILE:-}"
+APP_NAME="${APP_NAME:-mcp-ai-dev-kit}"
 
 # 인자 파싱
 while [[ $# -gt 0 ]]; do
   case $1 in
     --catalog) CATALOG="$2"; shift 2 ;;
+    --profile) PROFILE="$2"; shift 2 ;;
+    --app-name) APP_NAME="$2"; shift 2 ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
 done
@@ -47,10 +53,20 @@ if [ -z "$CATALOG" ]; then
   exit 1
 fi
 
+# 프로필 옵션 설정
+DBX_PROFILE=""
+if [ -n "$PROFILE" ]; then
+  DBX_PROFILE="--profile $PROFILE"
+fi
+
 echo "================================================"
 echo "  Genie Code + AI Dev Kit 간편 배포"
 echo "================================================"
 echo "  카탈로그: $CATALOG"
+echo "  앱 이름:  $APP_NAME"
+if [ -n "$PROFILE" ]; then
+  echo "  프로필:   $PROFILE"
+fi
 echo ""
 
 # 1. Databricks CLI 확인
@@ -64,34 +80,33 @@ fi
 echo "✅ Databricks CLI: $(databricks --version)"
 
 # 2. 인증 확인
-if ! databricks current-user me &> /dev/null; then
+if ! databricks $DBX_PROFILE current-user me &> /dev/null; then
   echo "❌ Databricks 인증이 필요합니다."
   echo "   실행: databricks auth login --host <워크스페이스 URL>"
   exit 1
 fi
-USER=$(databricks current-user me --output json 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('userName','unknown'))" 2>/dev/null || echo "authenticated")
+USER=$(databricks $DBX_PROFILE current-user me --output json 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('userName','unknown'))" 2>/dev/null || echo "authenticated")
 echo "✅ 인증: $USER"
 
 # 3. MCP 앱 생성 + 배포
 echo ""
 echo "📦 MCP 앱 배포 중..."
-APP_NAME="mcp-ai-dev-kit"
 
 # 앱이 이미 있는지 확인
-if databricks apps get "$APP_NAME" &> /dev/null; then
+if databricks $DBX_PROFILE apps get "$APP_NAME" &> /dev/null; then
   echo "   앱이 이미 존재합니다. 소스 코드를 업데이트합니다..."
-  databricks apps deploy "$APP_NAME" --source-code-path ./app
+  databricks $DBX_PROFILE apps deploy "$APP_NAME" --source-code-path ./app
 else
   echo "   새 앱을 생성하고 배포합니다..."
-  databricks apps create "$APP_NAME" --description "AI Dev Kit MCP Server for Genie Code"
-  databricks apps deploy "$APP_NAME" --source-code-path ./app
+  databricks $DBX_PROFILE apps create "$APP_NAME" --description "AI Dev Kit MCP Server for Genie Code"
+  databricks $DBX_PROFILE apps deploy "$APP_NAME" --source-code-path ./app
 fi
 
 # 4. 배포 완료 대기
 echo ""
 echo "⏳ 앱 시작 대기 중 (최대 2분)..."
 for i in $(seq 1 24); do
-  STATUS=$(databricks apps get "$APP_NAME" --output json 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('status',{}).get('state','UNKNOWN'))" 2>/dev/null || echo "UNKNOWN")
+  STATUS=$(databricks $DBX_PROFILE apps get "$APP_NAME" --output json 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('status',{}).get('state','UNKNOWN'))" 2>/dev/null || echo "UNKNOWN")
   if [ "$STATUS" = "RUNNING" ]; then
     echo "✅ 앱 상태: RUNNING"
     break
@@ -102,18 +117,18 @@ done
 
 if [ "$STATUS" != "RUNNING" ]; then
   echo "⚠️  앱이 아직 시작되지 않았습니다. 잠시 후 다시 확인하세요:"
-  echo "   databricks apps get $APP_NAME"
+  echo "   databricks $DBX_PROFILE apps get $APP_NAME"
 fi
 
 # 5. SP 권한 자동 부여
 echo ""
 echo "🔐 서비스 프린시펄 권한 설정 중..."
 
-SP_CLIENT_ID=$(databricks apps get "$APP_NAME" --output json 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('service_principal_client_id',''))" 2>/dev/null)
+SP_CLIENT_ID=$(databricks $DBX_PROFILE apps get "$APP_NAME" --output json 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('service_principal_client_id',''))" 2>/dev/null)
 
 if [ -n "$SP_CLIENT_ID" ]; then
-  TOKEN=$(databricks auth token 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('access_token',''))" 2>/dev/null || echo "")
-  HOST=$(databricks auth env 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('env',{}).get('DATABRICKS_HOST',''))" 2>/dev/null || echo "")
+  TOKEN=$(databricks $DBX_PROFILE auth token 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('access_token',''))" 2>/dev/null || echo "")
+  HOST=$(databricks $DBX_PROFILE auth env 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('env',{}).get('DATABRICKS_HOST',''))" 2>/dev/null || echo "")
 
   if [ -n "$TOKEN" ] && [ -n "$HOST" ]; then
     # SP Databricks ID 조회
@@ -139,7 +154,7 @@ if [ -n "$SP_CLIENT_ID" ]; then
       echo "   ✅ Workspace + SQL 접근 권한 부여"
 
       # SQL Warehouse 권한
-      WH_ID=$(databricks warehouses list --output json 2>/dev/null | $PYTHON -c "import json,sys; whs=json.load(sys.stdin); print(whs[0]['id'] if whs else '')" 2>/dev/null)
+      WH_ID=$(databricks $DBX_PROFILE warehouses list --output json 2>/dev/null | $PYTHON -c "import json,sys; whs=json.load(sys.stdin); print(whs[0]['id'] if whs else '')" 2>/dev/null)
       if [ -n "$WH_ID" ]; then
         curl -s -X PATCH "$HOST/api/2.0/permissions/sql/warehouses/$WH_ID" \
           -H "Authorization: Bearer $TOKEN" \
@@ -176,7 +191,7 @@ if command -v databricks &> /dev/null; then
     rm -rf /tmp/ai-dev-kit
   fi
   git clone --depth 1 https://github.com/databricks-solutions/ai-dev-kit.git /tmp/ai-dev-kit 2>/dev/null
-  databricks workspace import-dir /tmp/ai-dev-kit/skills /Workspace/.assistant/skills/ai-dev-kit --overwrite 2>/dev/null && \
+  databricks $DBX_PROFILE workspace import-dir /tmp/ai-dev-kit/skills /Workspace/.assistant/skills/ai-dev-kit --overwrite 2>/dev/null && \
     echo "   ✅ Skills 배포 완료" || echo "   ⚠️ Skills 배포 실패 (수동 배포 필요)"
   rm -rf /tmp/ai-dev-kit
 fi

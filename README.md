@@ -10,6 +10,9 @@ cd genie-code-ai-dev-kit
 # 2. 간편 배포 (앱 생성 + 배포 + 권한 + Skills 자동)
 #    --catalog은 필수입니다. 본인의 Unity Catalog 이름을 지정하세요.
 ./deploy.sh --catalog my_catalog
+
+# 옵션: 프로필/앱 이름 지정
+./deploy.sh --catalog my_catalog --profile my_profile --app-name my-mcp-app
 ```
 
 > **Windows 사용자**: `deploy.sh`는 Bash 스크립트입니다. Git Bash, WSL, 또는 아래 [수동 설정 가이드](#3-step-by-step-구성-가이드)를 참고하세요.
@@ -38,8 +41,9 @@ cd genie-code-ai-dev-kit
 
 ### Databricks CLI 설치
 
-{% tabs %}
-{% tab title="macOS" %}
+<details>
+<summary><b>macOS</b></summary>
+
 ```bash
 # Homebrew
 brew install databricks
@@ -47,9 +51,11 @@ brew install databricks
 # 버전 확인
 databricks --version
 ```
-{% endtab %}
+</details>
 
-{% tab title="Windows" %}
+<details>
+<summary><b>Windows</b></summary>
+
 ```powershell
 # 방법 1: winget (권장)
 winget install Databricks.DatabricksCLI
@@ -66,9 +72,11 @@ databricks --version
 ```
 
 > **참고**: `pip install databricks-cli`는 **레거시 CLI**입니다. 반드시 위 방법으로 최신 Databricks CLI를 설치하세요.
-{% endtab %}
+</details>
 
-{% tab title="Linux" %}
+<details>
+<summary><b>Linux</b></summary>
+
 ```bash
 # 직접 다운로드
 curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
@@ -76,8 +84,7 @@ curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.s
 # 버전 확인
 databricks --version
 ```
-{% endtab %}
-{% endtabs %}
+</details>
 
 ### Databricks CLI 인증
 
@@ -103,14 +110,17 @@ databricks current-user me
 
 ### jq 설치 (deploy.sh에서 필요)
 
-{% tabs %}
-{% tab title="macOS" %}
+<details>
+<summary><b>macOS</b></summary>
+
 ```bash
 brew install jq
 ```
-{% endtab %}
+</details>
 
-{% tab title="Windows" %}
+<details>
+<summary><b>Windows</b></summary>
+
 ```powershell
 # winget
 winget install jqlang.jq
@@ -121,9 +131,11 @@ choco install jq
 # 또는 scoop
 scoop install jq
 ```
-{% endtab %}
+</details>
 
-{% tab title="Linux" %}
+<details>
+<summary><b>Linux</b></summary>
+
 ```bash
 # Ubuntu/Debian
 sudo apt-get install jq
@@ -131,8 +143,7 @@ sudo apt-get install jq
 # RHEL/CentOS
 sudo yum install jq
 ```
-{% endtab %}
-{% endtabs %}
+</details>
 
 ### Windows에서 deploy.sh 실행하기
 
