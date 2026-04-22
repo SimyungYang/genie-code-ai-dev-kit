@@ -104,14 +104,19 @@ echo "✅ 인증: $USER"
 echo ""
 echo "📦 MCP 앱 배포 중..."
 
+# 소스 코드를 워크스페이스에 업로드
+WS_SOURCE_PATH="/Workspace/Users/$USER/apps/$APP_NAME"
+echo "   소스 코드 업로드: $WS_SOURCE_PATH"
+databricks $DBX_PROFILE workspace import-dir ./app "$WS_SOURCE_PATH" --overwrite
+
 # 앱이 이미 있는지 확인
 if databricks $DBX_PROFILE apps get "$APP_NAME" &> /dev/null; then
   echo "   앱이 이미 존재합니다. 소스 코드를 업데이트합니다..."
-  databricks $DBX_PROFILE apps deploy "$APP_NAME" --source-code-path ./app
+  databricks $DBX_PROFILE apps deploy "$APP_NAME" --source-code-path "$WS_SOURCE_PATH"
 else
   echo "   새 앱을 생성하고 배포합니다..."
   databricks $DBX_PROFILE apps create "$APP_NAME" --description "AI Dev Kit MCP Server for Genie Code"
-  databricks $DBX_PROFILE apps deploy "$APP_NAME" --source-code-path ./app
+  databricks $DBX_PROFILE apps deploy "$APP_NAME" --source-code-path "$WS_SOURCE_PATH"
 fi
 
 # 4. 배포 완료 대기
