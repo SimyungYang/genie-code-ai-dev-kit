@@ -80,10 +80,22 @@ fi
 echo "✅ Databricks CLI: $(databricks --version)"
 
 # 2. 인증 확인
+# --profile 미지정 시 DEFAULT 프로필 자동 감지 (Windows Git Bash 호환)
 if ! databricks $DBX_PROFILE current-user me &> /dev/null; then
-  echo "❌ Databricks 인증이 필요합니다."
-  echo "   실행: databricks auth login --host <워크스페이스 URL>"
-  exit 1
+  if [ -z "$DBX_PROFILE" ] && databricks --profile DEFAULT current-user me &> /dev/null; then
+    echo "⚠️  기본 인증 감지 실패, DEFAULT 프로필로 전환합니다."
+    DBX_PROFILE="--profile DEFAULT"
+    PROFILE="DEFAULT"
+  else
+    echo "❌ Databricks 인증이 필요합니다."
+    echo "   실행: databricks auth login --host <워크스페이스 URL>"
+    echo ""
+    echo "   이미 인증했다면 프로필을 명시해보세요:"
+    echo "   ./deploy.sh --catalog $CATALOG --profile DEFAULT"
+    echo ""
+    echo "   현재 프로필 확인: databricks auth profiles"
+    exit 1
+  fi
 fi
 USER=$(databricks $DBX_PROFILE current-user me --output json 2>/dev/null | $PYTHON -c "import json,sys; print(json.load(sys.stdin).get('userName','unknown'))" 2>/dev/null || echo "authenticated")
 echo "✅ 인증: $USER"
